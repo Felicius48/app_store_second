@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { addToCart } from '../features/cart/cartSlice';
-import { toggleFavorite } from '../features/favorites/favoritesSlice';
 import { HeartIcon as HeartOutlineIcon, ScaleIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
+import { addToCart } from '../features/cart/cartSlice';
+import { toggleFavorite } from '../features/favorites/favoritesSlice';
 
 const placeholderImage =
   'https://via.placeholder.com/400x400.png?text=%D0%9D%D0%B5%D1%82+%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F';

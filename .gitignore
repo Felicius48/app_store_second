@@ -1,6 +1,5 @@
 .DS_Store
 .env
-.env.*
 *.log
 
 # Node
@@ -20,12 +19,8 @@ backend/database.db
 backend/database.sqlite
 
 # Uploads
-backend/uploads/avatars/
-backend/uploads/products/
 backend/uploads/
 
 # IDE
 .vscode/
 .idea/
-.cursor/
-frontend/.env

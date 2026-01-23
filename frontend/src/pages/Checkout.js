@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { clearCart } from '../features/cart/cartSlice';
 import { createOrder } from '../features/orders/ordersSlice';
 import api from '../services/api';
