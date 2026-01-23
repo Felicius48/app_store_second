@@ -22,21 +22,21 @@ class User {
 
   // Создание нового пользователя
   static async create(userData) {
-    const { email, password, firstName, lastName, phone, avatarUrl, address, city, postalCode } = userData;
+    const { email, password, firstName, lastName, phone, avatarUrl, address, city, postalCode, role } = userData;
 
     // Хэширование пароля
     const saltRounds = 12;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const sql = `
-      INSERT INTO users (email, password, first_name, last_name, phone, address, city, postal_code, avatar_url)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO users (email, password, first_name, last_name, phone, address, city, postal_code, avatar_url, role)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     try {
       const result = await runQuery(
         sql,
-        [email, hashedPassword, firstName, lastName, phone, address, city, postalCode, avatarUrl]
+        [email, hashedPassword, firstName, lastName, phone, address, city, postalCode, avatarUrl, role || 'user']
       );
       return { id: result.id, message: 'Пользователь успешно создан' };
     } catch (error) {

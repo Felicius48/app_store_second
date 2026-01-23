@@ -22,7 +22,8 @@ async function initDatabase() {
         password: process.env.ADMIN_PASSWORD || 'admin123',
         firstName: 'Admin',
         lastName: 'User',
-        phone: '+7 (999) 123-45-67'
+        phone: '+7 (999) 123-45-67',
+        role: 'admin'
       };
 
       // Проверяем, существует ли уже админ
@@ -31,6 +32,7 @@ async function initDatabase() {
         const admin = await User.create(adminData);
         console.log('✅ Администратор создан:', adminData.email);
       } else {
+        await runQuery('UPDATE users SET role = ? WHERE id = ?', ['admin', existingAdmin.id]);
         console.log('ℹ️  Администратор уже существует');
       }
     } catch (error) {
