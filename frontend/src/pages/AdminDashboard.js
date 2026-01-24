@@ -12,7 +12,8 @@ import {
   XMarkIcon,
   ChevronDownIcon,
   ChevronRightIcon,
-  PhotoIcon
+  PhotoIcon,
+  DocumentDuplicateIcon
 } from '@heroicons/react/24/outline';
 import { fetchCategories, fetchCategoryTree } from '../features/categories/categoriesSlice';
 
@@ -56,6 +57,7 @@ const AdminDashboard = () => {
     name: '',
     description: '',
     imageUrl: '',
+    iconUrl: '',
     parentId: ''
   });
 
@@ -254,6 +256,30 @@ const AdminDashboard = () => {
     window.location.reload();
   };
 
+  const handleCategoryIconUpload = async (file) => {
+    if (!file) return;
+    try {
+      const formData = new FormData();
+      formData.append('images', file);
+      const response = await fetch('http://localhost:5001/api/products/upload-images', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: formData
+      });
+      const data = await response.json();
+      if (data.success && data.data?.images?.length > 0) {
+        setCategoryForm((prev) => ({ ...prev, iconUrl: data.data.images[0] }));
+      } else {
+        alert(data.message || 'Ошибка загрузки иконки');
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки иконки категории:', error);
+      alert('Произошла ошибка при загрузке иконки');
+    }
+  };
+
   const handleViewOrder = async (orderId) => {
     try {
       const response = await fetch(`http://localhost:5001/api/orders/admin/all?orderId=${orderId}`, {
@@ -402,6 +428,7 @@ const AdminDashboard = () => {
       name: '',
       description: '',
       imageUrl: '',
+      iconUrl: '',
       parentId: parentId || ''
     });
     setShowCategoryForm(true);
@@ -413,6 +440,7 @@ const AdminDashboard = () => {
       name: category.name || '',
       description: category.description || '',
       imageUrl: category.imageUrl || '',
+      iconUrl: category.iconUrl || '',
       parentId: category.parentId || ''
     });
     setShowCategoryForm(true);
@@ -452,6 +480,7 @@ const AdminDashboard = () => {
 
     const description = (categoryForm.description || '').trim();
     const imageUrl = (categoryForm.imageUrl || '').trim();
+    const iconUrl = (categoryForm.iconUrl || '').trim();
     const rawParentId = categoryForm.parentId !== null && categoryForm.parentId !== undefined
       ? String(categoryForm.parentId).trim()
       : '';
@@ -470,6 +499,7 @@ const AdminDashboard = () => {
       name,
       description: description || undefined,
       imageUrl: imageUrl || undefined,
+      iconUrl: iconUrl || undefined,
       parentId: parentIdValue !== null ? parentIdValue : undefined
     };
 
@@ -756,6 +786,47 @@ const AdminDashboard = () => {
       console.error('Ошибка сохранения товара:', error);
       alert('Произошла ошибка при сохранении товара');
     }
+  };
+
+  const handleDuplicateProduct = (product) => {
+    const ensureArray = (value) => {
+      if (!value) return [];
+      if (Array.isArray(value)) return value;
+      if (typeof value === 'string') {
+        try {
+          return JSON.parse(value);
+        } catch (e) {
+          return [];
+        }
+      }
+      return [];
+    };
+
+    const generateSku = (baseSku, productId) => {
+      const sanitized = String(baseSku || '').trim().replace(/\s+/g, '-').toUpperCase();
+      const suffix = `${Date.now().toString(36).toUpperCase()}${productId ? `-${productId}` : ''}`;
+      if (!sanitized) return `SKU-${suffix}`;
+      return `${sanitized}-COPY-${suffix}`;
+    };
+
+    setEditingProduct(null);
+    setProductForm({
+      name: `${product.name || 'Товар'} (копия)`,
+      description: product.description || '',
+      price: product.price || '',
+      categoryId: product.categoryId || '',
+      categoryIds: product.categoryIds || (product.categoryId ? [product.categoryId] : []),
+      brandId: product.brandId || '',
+      stockQuantity: product.stockQuantity || '',
+      sku: generateSku(product.sku, product.id),
+      images: ensureArray(product.images),
+      specifications: product.specifications || {}
+    });
+
+    const specs = product.specifications || {};
+    const specsList = Object.entries(specs).map(([key, value]) => ({ key, value }));
+    setSpecificationsList(specsList);
+    setShowProductForm(true);
   };
 
   const getStatusColor = (status) => {
@@ -1045,6 +1116,13 @@ const AdminDashboard = () => {
                             title="Редактировать товар"
                           >
                             <PencilIcon className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={() => handleDuplicateProduct(product)}
+                            className="text-green-600 hover:text-green-900 mr-3"
+                            title="Создать копию"
+                          >
+                            <DocumentDuplicateIcon className="h-5 w-5" />
                           </button>
                           <button className="text-gray-600 hover:text-gray-900" title="Просмотреть товар">
                             <EyeIcon className="h-5 w-5" />
@@ -1570,6 +1648,43 @@ const AdminDashboard = () => {
                     onChange={(e) => setCategoryForm({ ...categoryForm, imageUrl: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Иконка категории (опционально)
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden">
+                      {categoryForm.iconUrl ? (
+                        <img
+                          src={categoryForm.iconUrl.startsWith('http') ? categoryForm.iconUrl : `http://localhost:5001${categoryForm.iconUrl}`}
+                          alt="Иконка категории"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <PhotoIcon className="h-5 w-5 text-gray-400" />
+                      )}
+                    </div>
+                    <label className="text-sm text-primary-600 hover:text-primary-700 font-medium cursor-pointer">
+                      Загрузить иконку
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleCategoryIconUpload(e.target.files?.[0])}
+                      />
+                    </label>
+                    {categoryForm.iconUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setCategoryForm({ ...categoryForm, iconUrl: '' })}
+                        className="text-sm text-red-600 hover:text-red-700"
+                      >
+                        Удалить
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 

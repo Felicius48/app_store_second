@@ -7,6 +7,7 @@ class Category {
     this.slug = data.slug;
     this.description = data.description;
     this.imageUrl = data.image_url;
+    this.iconUrl = data.icon_url;
     this.parentId = data.parent_id;
     this.isActive = Boolean(data.is_active);
     this.createdAt = data.created_at;
@@ -15,7 +16,7 @@ class Category {
 
   // Создание категории
   static async create(categoryData) {
-    const { name, description, imageUrl, parentId } = categoryData;
+    const { name, description, imageUrl, iconUrl, parentId } = categoryData;
 
     // Генерация базового slug
     let baseSlug = this.generateSlug(name);
@@ -25,12 +26,12 @@ class Category {
     let slug = baseSlug;
 
     const sql = `
-      INSERT INTO categories (name, slug, description, image_url, parent_id)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO categories (name, slug, description, image_url, icon_url, parent_id)
+      VALUES (?, ?, ?, ?, ?, ?)
     `;
 
     try {
-      const result = await runQuery(sql, [name, slug, description, imageUrl, parentId]);
+      const result = await runQuery(sql, [name, slug, description, imageUrl, iconUrl, parentId]);
       return { id: result.id, message: 'Категория успешно создана' };
     } catch (error) {
       // Если slug уже занят, пробуем добавить суффикс и повторить попытку
@@ -39,7 +40,7 @@ class Category {
         for (let i = 2; i <= 50; i++) {
           const newSlug = `${baseSlug}-${i}`;
           try {
-            const result = await runQuery(sql, [name, newSlug, description, imageUrl, parentId]);
+            const result = await runQuery(sql, [name, newSlug, description, imageUrl, iconUrl, parentId]);
             return { id: result.id, message: 'Категория успешно создана' };
           } catch (e) {
             if (!e.message.includes('UNIQUE constraint failed')) {
@@ -95,7 +96,16 @@ class Category {
   // Получение дерева категорий
   static async getTree() {
     const categories = await this.findAll();
-    return this.buildTree(categories);
+    const enriched = await Promise.all(
+      categories.map(async (category) => {
+        const data = category.toPublicData();
+        if (!data.iconUrl) {
+          data.sampleImage = await this.getFirstProductImage(category.id);
+        }
+        return data;
+      })
+    );
+    return this.buildTree(enriched);
   }
 
   // Построение дерева категорий
@@ -124,20 +134,41 @@ class Category {
 
   // Обновление категории
   static async update(id, updateData) {
-    const { name, description, imageUrl, parentId } = updateData;
+    const { name, description, imageUrl, iconUrl, parentId } = updateData;
 
     const sql = `
       UPDATE categories SET
         name = COALESCE(?, name),
         description = COALESCE(?, description),
         image_url = COALESCE(?, image_url),
+        icon_url = COALESCE(?, icon_url),
         parent_id = ?,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `;
 
-    await runQuery(sql, [name, description, imageUrl, parentId, id]);
+    await runQuery(sql, [name, description, imageUrl, iconUrl, parentId, id]);
     return { message: 'Категория успешно обновлена' };
+  }
+
+  static async getFirstProductImage(categoryId) {
+    const sql = `
+      SELECT p.images
+      FROM products p
+      LEFT JOIN product_categories pc ON pc.product_id = p.id
+      WHERE p.is_active = 1
+        AND (p.category_id = ? OR pc.category_id = ?)
+      ORDER BY p.created_at DESC
+      LIMIT 1
+    `;
+    const row = await getQuery(sql, [categoryId, categoryId]);
+    if (!row?.images) return null;
+    try {
+      const images = JSON.parse(row.images);
+      return Array.isArray(images) && images.length > 0 ? images[0] : null;
+    } catch (e) {
+      return null;
+    }
   }
 
   // Удаление категории (вместе с товарами, связанными с ней)
@@ -212,6 +243,7 @@ class Category {
       slug: this.slug,
       description: this.description,
       imageUrl: this.imageUrl,
+      iconUrl: this.iconUrl,
       parentId: this.parentId,
       createdAt: this.createdAt
     };

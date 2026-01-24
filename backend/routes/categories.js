@@ -114,7 +114,7 @@ router.post('/', authenticate, createCategoryValidation, async (req, res) => {
       });
     }
 
-    const { name, description, imageUrl, parentId } = req.body;
+    const { name, description, imageUrl, iconUrl, parentId } = req.body;
 
     // Если указан parentId, проверяем существование родительской категории
     if (parentId) {
@@ -132,6 +132,7 @@ router.post('/', authenticate, createCategoryValidation, async (req, res) => {
       name,
       description,
       imageUrl,
+      iconUrl,
       parentId
     });
 
@@ -211,7 +212,7 @@ router.put('/:id', authenticate, [
       });
     }
 
-    const { name, description, imageUrl, parentId } = req.body;
+    const { name, description, imageUrl, iconUrl, parentId } = req.body;
 
     // Если указан parentId, проверяем существование родительской категории
     if (parentId && parentId !== existingCategory.parentId) {
@@ -237,6 +238,7 @@ router.put('/:id', authenticate, [
       name,
       description,
       imageUrl,
+      iconUrl,
       parentId
     });
 

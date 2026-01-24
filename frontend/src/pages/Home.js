@@ -265,7 +265,7 @@ const Home = () => {
       </section>
 
       {/* Преимущества */}
-      <section className="bg-white rounded-2xl p-8 shadow-sm">
+      <section className="bg-white rounded-2xl p-8 shadow-sm text-center">
         <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-6">Наши преимущества</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="rounded-xl border border-gray-200 p-6">

@@ -71,6 +71,15 @@ const Header = () => {
   const activeRootCategory =
     categoryTree.find((cat) => cat.id === activeRootCategoryId) || null;
 
+  const getCategoryIconUrl = (category) => {
+    const icon = category.iconUrl || category.sampleImage;
+    if (!icon) return null;
+    if (icon.startsWith('http://') || icon.startsWith('https://') || icon.startsWith('data:')) {
+      return icon;
+    }
+    return `http://localhost:5001${icon}`;
+  };
+
   const renderSubcategoriesGrid = () => {
     if (!activeRootCategory) {
       return (
@@ -120,37 +129,50 @@ const Header = () => {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto pr-2">
-          {level2.map((sub) => (
-            <div
-              key={sub.id}
-              className="bg-gray-50 hover:bg-gray-100 rounded-xl p-4 cursor-pointer transition-colors border border-transparent hover:border-primary-100"
-              onClick={() => handleCategorySelect(sub.id)}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-semibold text-gray-900">{sub.name}</h4>
-                <span className="text-xs text-gray-400">→</span>
-              </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 overflow-y-auto pr-2">
+          {level2.map((sub) => {
+            const iconUrl = getCategoryIconUrl(sub);
+            return (
+              <div key={sub.id} className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => handleCategorySelect(sub.id)}
+                  className="flex items-center gap-3 text-left group"
+                >
+                  <div className="h-10 w-10 rounded-lg bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center">
+                    {iconUrl ? (
+                      <img src={iconUrl} alt={sub.name} className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="text-sm text-gray-400">📦</span>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-gray-900 group-hover:text-primary-700 transition-colors">
+                      {sub.name}
+                    </div>
+                  </div>
+                </button>
 
-              {sub.children && sub.children.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {sub.children.map((child) => (
-                    <button
-                      key={child.id}
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCategorySelect(child.id);
-                      }}
-                      className="text-xs px-2 py-1 rounded-full bg-white border border-gray-200 hover:border-primary-300 hover:text-primary-700 transition-colors"
-                    >
-                      {child.name}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+                {sub.children && sub.children.length > 0 && (
+                  <div className="space-y-2 pl-12">
+                    {sub.children.map((child) => (
+                      <button
+                        key={child.id}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCategorySelect(child.id);
+                        }}
+                        className="block text-sm text-gray-600 hover:text-primary-600 transition-colors"
+                      >
+                        {child.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     );
@@ -264,6 +286,28 @@ const Header = () => {
           </div>
         </div>
       </div>
+
+      {/* Меню категорий под шапкой */}
+      {categoryTree.length > 0 && (
+        <div className="border-t border-gray-100 bg-white">
+          <div className="container mx-auto px-4">
+            <div className="overflow-x-auto">
+              <ul className="flex items-center justify-center gap-6 py-3 text-sm whitespace-nowrap">
+                {categoryTree.map((category) => (
+                  <li key={category.id}>
+                    <Link
+                      to={`/products?category=${category.id}`}
+                      className="text-gray-700 hover:text-primary-600 font-medium transition-colors"
+                    >
+                      {category.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Модальное мегаменю каталога */}
       {isCatalogOpen && (

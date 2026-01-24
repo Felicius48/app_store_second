@@ -14,9 +14,6 @@ build/
 .cache/
 .parcel-cache/
 
-# Local databases
-backend/database.db
-backend/database.sqlite
 
 # Uploads
 backend/uploads/

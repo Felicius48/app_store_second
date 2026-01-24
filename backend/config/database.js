@@ -43,6 +43,7 @@ function initializeDatabase() {
       slug TEXT UNIQUE NOT NULL,
       description TEXT,
       image_url TEXT,
+      icon_url TEXT,
       parent_id INTEGER,
       is_active BOOLEAN DEFAULT 1,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -201,6 +202,8 @@ function initializeDatabase() {
     `ALTER TABLE users ADD COLUMN postal_code TEXT`,
     // Добавление specifications в products (если старые БД без колонки)
     `ALTER TABLE products ADD COLUMN specifications TEXT`,
+    // Иконка категории
+    `ALTER TABLE categories ADD COLUMN icon_url TEXT`,
     // YooKassa: связь заказа с платежом
     `ALTER TABLE orders ADD COLUMN payment_id TEXT`,
     `ALTER TABLE orders ADD COLUMN payment_confirmation_url TEXT`,
