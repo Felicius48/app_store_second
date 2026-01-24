@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { CheckCircleIcon, HomeIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
+import { clearCart } from '../features/cart/cartSlice';
 import api from '../services/api';
 
 const OrderSuccess = () => {
+  const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get('orderId');
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(Boolean(orderId));
+  const [cartCleared, setCartCleared] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -25,6 +29,13 @@ const OrderSuccess = () => {
     load();
   }, [orderId]);
 
+  useEffect(() => {
+    if (!cartCleared && order?.paymentStatus === 'paid') {
+      dispatch(clearCart());
+      setCartCleared(true);
+    }
+  }, [cartCleared, dispatch, order?.paymentStatus]);
+
   const paymentStatusText =
     order?.paymentStatus === 'paid'
       ? 'Оплата прошла успешно'
@@ -34,7 +45,7 @@ const OrderSuccess = () => {
           ? 'Оплата не прошла'
           : null;
 
-  const orderStatusText = order?.statusText || 'Ожидает обработки';
+  const orderStatusText = order?.statusText || 'Ожидает подтверждения';
 
   const getPaymentStatusColor = (status) => {
     switch (status) {
