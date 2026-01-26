@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
+import { fetchBanners } from '../services/settings';
 import ProductCard from '../components/ProductCard';
 
 const Home = () => {
@@ -81,19 +82,19 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    const stored = localStorage.getItem('home_banners');
-    if (stored) {
+    const loadBanners = async () => {
       try {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setBanners(parsed);
+        const remoteBanners = await fetchBanners();
+        if (Array.isArray(remoteBanners) && remoteBanners.length > 0) {
+          setBanners(remoteBanners);
           return;
         }
       } catch (e) {
-        // ignore invalid storage
+        // ignore and fallback to defaults
       }
-    }
-    setBanners(defaultBanners);
+      setBanners(defaultBanners);
+    };
+    loadBanners();
   }, [defaultBanners]);
 
   useEffect(() => {

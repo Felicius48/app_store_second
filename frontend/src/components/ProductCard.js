@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { HeartIcon as HeartOutlineIcon, ScaleIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 import { addToCart } from '../features/cart/cartSlice';
-import { toggleFavorite } from '../features/favorites/favoritesSlice';
+import { addFavorite, removeFavorite } from '../features/favorites/favoritesSlice';
 
 const placeholderImage =
   'https://via.placeholder.com/400x400.png?text=%D0%9D%D0%B5%D1%82+%D0%B8%D0%B7%D0%BE%D0%B1%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F';
@@ -13,8 +13,7 @@ const ProductCard = ({ product }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
-  const favoritesState = useSelector((state) => state.favorites);
-  const favoriteItems = user ? stateSelectorFavoritesByUser(favoritesState, user.id) : [];
+  const favoriteItems = useSelector((state) => state.favorites.items || []);
   const favoriteIds = favoriteItems.map((item) => item.id);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const isFavorite = favoriteIds.includes(product.id);
@@ -50,7 +49,11 @@ const ProductCard = ({ product }) => {
       setShowLoginModal(true);
       return;
     }
-    dispatch(toggleFavorite({ userId: user.id, product }));
+    if (isFavorite) {
+      dispatch(removeFavorite({ productId: product.id }));
+    } else {
+      dispatch(addFavorite({ product }));
+    }
   };
 
   return (
@@ -176,9 +179,5 @@ const ProductCard = ({ product }) => {
   );
 };
 
-const stateSelectorFavoritesByUser = (favoritesState, userId) => {
-  if (!favoritesState?.itemsByUser || !userId) return [];
-  return favoritesState.itemsByUser[String(userId)] || [];
-};
 
 export default ProductCard;

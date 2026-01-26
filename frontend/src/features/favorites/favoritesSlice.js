@@ -1,4 +1,5 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import * as favoritesApi from '../../services/favorites';
 
 const normalizeProduct = (product) => {
   if (!product) return null;
@@ -23,68 +24,80 @@ const normalizeProduct = (product) => {
   };
 };
 
+export const loadFavorites = createAsyncThunk(
+  'favorites/loadFavorites',
+  async (_, { rejectWithValue }) => {
+    try {
+      const products = await favoritesApi.fetchFavorites();
+      return products;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Ошибка загрузки избранного');
+    }
+  }
+);
+
+export const addFavorite = createAsyncThunk(
+  'favorites/addFavorite',
+  async ({ product }, { rejectWithValue }) => {
+    try {
+      await favoritesApi.addFavorite(product.id);
+      return normalizeProduct(product);
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Ошибка добавления в избранное');
+    }
+  }
+);
+
+export const removeFavorite = createAsyncThunk(
+  'favorites/removeFavorite',
+  async ({ productId }, { rejectWithValue }) => {
+    try {
+      await favoritesApi.removeFavorite(productId);
+      return productId;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Ошибка удаления из избранного');
+    }
+  }
+);
+
 const favoritesSlice = createSlice({
   name: 'favorites',
   initialState: {
-    itemsByUser: {},
+    items: [],
+    loading: false,
+    error: null,
   },
   reducers: {
-    toggleFavorite: (state, action) => {
-      const { userId, product } = action.payload || {};
-      if (!userId) return;
-      ensureItemsByUserState(state, userId);
-      const normalized = normalizeProduct(product);
-      if (!normalized?.id) return;
-
-      const userKey = String(userId);
-      if (!state.itemsByUser[userKey]) {
-        state.itemsByUser[userKey] = [];
-      }
-
-      const existingIndex = state.itemsByUser[userKey].findIndex(
-        (item) => item.id === normalized.id
-      );
-      if (existingIndex >= 0) {
-        state.itemsByUser[userKey].splice(existingIndex, 1);
-      } else {
-        state.itemsByUser[userKey].push(normalized);
-      }
+    clearFavorites: (state) => {
+      state.items = [];
     },
-    removeFavorite: (state, action) => {
-      const { userId, id } = action.payload || {};
-      if (!userId) return;
-      ensureItemsByUserState(state, userId);
-      const userKey = String(userId);
-      if (!state.itemsByUser[userKey]) return;
-      state.itemsByUser[userKey] = state.itemsByUser[userKey].filter((item) => item.id !== id);
-    },
-    clearFavorites: (state, action) => {
-      const { userId } = action.payload || {};
-      if (!userId) return;
-      ensureItemsByUserState(state, userId);
-      const userKey = String(userId);
-      state.itemsByUser[userKey] = [];
-    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(loadFavorites.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loadFavorites.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = action.payload;
+      })
+      .addCase(loadFavorites.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(addFavorite.fulfilled, (state, action) => {
+        const item = action.payload;
+        if (!item) return;
+        if (!state.items.find((p) => p.id === item.id)) {
+          state.items.push(item);
+        }
+      })
+      .addCase(removeFavorite.fulfilled, (state, action) => {
+        state.items = state.items.filter((p) => p.id !== action.payload);
+      });
   },
 });
 
-export const { toggleFavorite, removeFavorite, clearFavorites } = favoritesSlice.actions;
+export const { clearFavorites } = favoritesSlice.actions;
 export default favoritesSlice.reducer;
-
-const ensureItemsByUserState = (state, userId) => {
-  if (!state.itemsByUser) {
-    state.itemsByUser = {};
-  }
-
-  const userKey = String(userId);
-  if (!state.itemsByUser[userKey]) {
-    state.itemsByUser[userKey] = [];
-  }
-
-  if (Array.isArray(state.items) && state.items.length > 0) {
-    state.itemsByUser[userKey] = state.itemsByUser[userKey].length > 0
-      ? state.itemsByUser[userKey]
-      : state.items;
-    delete state.items;
-  }
-};

@@ -16,6 +16,7 @@ import {
   DocumentDuplicateIcon
 } from '@heroicons/react/24/outline';
 import { fetchCategories, fetchCategoryTree } from '../features/categories/categoriesSlice';
+import { fetchBanners, saveBanners } from '../services/settings';
 
 const AdminDashboard = () => {
   const dispatch = useDispatch();
@@ -96,19 +97,19 @@ const AdminDashboard = () => {
       }
     ];
 
-    const stored = localStorage.getItem('home_banners');
-    if (stored) {
+    const loadBanners = async () => {
       try {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setBannerSettings(parsed);
+        const remoteBanners = await fetchBanners();
+        if (Array.isArray(remoteBanners) && remoteBanners.length > 0) {
+          setBannerSettings(remoteBanners);
           return;
         }
       } catch (e) {
-        // ignore invalid storage
+        // ignore and fallback
       }
-    }
-    setBannerSettings(defaultBannerSettings);
+      setBannerSettings(defaultBannerSettings);
+    };
+    loadBanners();
   }, []);
 
   useEffect(() => {
@@ -245,15 +246,27 @@ const AdminDashboard = () => {
   };
 
   const handleBannerSave = () => {
-    localStorage.setItem('home_banners', JSON.stringify(bannerSettings));
-    setBannerSaveMessage('Баннеры сохранены');
-    setTimeout(() => setBannerSaveMessage(''), 3000);
+    saveBanners(bannerSettings)
+      .then(() => {
+        setBannerSaveMessage('Баннеры сохранены');
+        setTimeout(() => setBannerSaveMessage(''), 3000);
+      })
+      .catch(() => {
+        setBannerSaveMessage('Не удалось сохранить баннеры');
+        setTimeout(() => setBannerSaveMessage(''), 3000);
+      });
   };
 
   const handleBannerReset = () => {
-    localStorage.removeItem('home_banners');
-    setBannerSaveMessage('Настройки сброшены');
-    window.location.reload();
+    saveBanners([])
+      .then(() => {
+        setBannerSaveMessage('Настройки сброшены');
+        window.location.reload();
+      })
+      .catch(() => {
+        setBannerSaveMessage('Не удалось сбросить настройки');
+        setTimeout(() => setBannerSaveMessage(''), 3000);
+      });
   };
 
   const handleCategoryIconUpload = async (file) => {

@@ -11,12 +11,13 @@ import {
   HeartIcon,
 } from '@heroicons/react/24/outline';
 import { logout } from '../features/auth/authSlice';
+import { clearFavorites, loadFavorites } from '../features/favorites/favoritesSlice';
 import { fetchCategoryTree } from '../features/categories/categoriesSlice';
 
 const Header = () => {
   const { user } = useSelector((state) => state.auth);
   const { items } = useSelector((state) => state.cart);
-  const favoritesState = useSelector((state) => state.favorites);
+  const favoritesState = useSelector((state) => state.favorites) || { items: [] };
   const { categoryTree } = useSelector((state) => state.categories);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -26,15 +27,21 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const cartItemsCount = items.reduce((total, item) => total + item.quantity, 0);
-  const favoriteCount = user?.id
-    ? (favoritesState.itemsByUser?.[String(user.id)] || []).length
-    : 0;
+  const favoriteCount = (favoritesState.items || []).length;
 
   useEffect(() => {
     if (categoryTree.length === 0) {
       dispatch(fetchCategoryTree());
     }
   }, [dispatch, categoryTree.length]);
+
+  useEffect(() => {
+    if (!user) {
+      dispatch(clearFavorites());
+      return;
+    }
+    dispatch(loadFavorites());
+  }, [dispatch, user]);
 
   useEffect(() => {
     if (isCatalogOpen && categoryTree.length > 0 && !activeRootCategoryId) {

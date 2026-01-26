@@ -2,13 +2,19 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import ProductCard from '../components/ProductCard';
-import { clearFavorites } from '../features/favorites/favoritesSlice';
+import { clearFavorites, loadFavorites, removeFavorite } from '../features/favorites/favoritesSlice';
 
 const Favorites = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const favoritesState = useSelector((state) => state.favorites);
-  const items = user?.id ? favoritesState.itemsByUser?.[String(user.id)] || [] : [];
+  const items = favoritesState.items || [];
+
+  React.useEffect(() => {
+    if (user) {
+      dispatch(loadFavorites());
+    }
+  }, [dispatch, user]);
 
   if (!user) {
     return (
@@ -53,7 +59,7 @@ const Favorites = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Избранное</h1>
         <button
-          onClick={() => dispatch(clearFavorites({ userId: user.id }))}
+          onClick={() => dispatch(clearFavorites())}
           className="text-red-600 hover:text-red-800 text-sm font-medium"
         >
           Очистить список
@@ -62,7 +68,17 @@ const Favorites = () => {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
         {items.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <div key={product.id} className="relative">
+            <ProductCard product={product} />
+            <button
+              onClick={() => dispatch(removeFavorite({ productId: product.id }))}
+              className="absolute top-3 right-3 bg-white/90 hover:bg-white text-red-600 rounded-full h-8 w-8 flex items-center justify-center shadow"
+              title="Удалить из избранного"
+              type="button"
+            >
+              ×
+            </button>
+          </div>
         ))}
       </div>
     </div>
