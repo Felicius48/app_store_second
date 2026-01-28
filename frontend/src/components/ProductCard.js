@@ -58,7 +58,7 @@ const ProductCard = ({ product }) => {
 
   return (
     <>
-      <Link to={`/products/${product.id}`} className="block">
+    <Link to={`/products/${product.id}`} className="block">
       <div className="h-full bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden border border-gray-100 flex flex-col">
         {/* Изображение товара */}
         <div className="h-48 md:h-56 bg-gray-100 flex items-center justify-center">
@@ -142,7 +142,7 @@ const ProductCard = ({ product }) => {
           </div>
         </div>
       </div>
-      </Link>
+    </Link>
       {showLoginModal && (
         <div
           className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"

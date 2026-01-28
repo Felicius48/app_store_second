@@ -143,9 +143,9 @@ const Header = () => {
               <div key={sub.id} className="space-y-3">
                 <button
                   type="button"
-                  onClick={() => handleCategorySelect(sub.id)}
+              onClick={() => handleCategorySelect(sub.id)}
                   className="flex items-center gap-3 text-left group"
-                >
+            >
                   <div className="h-10 w-10 rounded-lg bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center">
                     {iconUrl ? (
                       <img src={iconUrl} alt={sub.name} className="h-full w-full object-cover" />
@@ -157,27 +157,27 @@ const Header = () => {
                     <div className="font-semibold text-gray-900 group-hover:text-primary-700 transition-colors">
                       {sub.name}
                     </div>
-                  </div>
+              </div>
                 </button>
 
-                {sub.children && sub.children.length > 0 && (
+              {sub.children && sub.children.length > 0 && (
                   <div className="space-y-2 pl-12">
-                    {sub.children.map((child) => (
-                      <button
-                        key={child.id}
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCategorySelect(child.id);
-                        }}
+                  {sub.children.map((child) => (
+                    <button
+                      key={child.id}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCategorySelect(child.id);
+                      }}
                         className="block text-sm text-gray-600 hover:text-primary-600 transition-colors"
-                      >
-                        {child.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+                    >
+                      {child.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             );
           })}
         </div>

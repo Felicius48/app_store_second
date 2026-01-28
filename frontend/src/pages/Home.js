@@ -201,11 +201,11 @@ const Home = () => {
 
         <div className="grid grid-cols-1 gap-6 h-full lg:grid-rows-2">
           {banners.slice(1, 3).map((b) => (
-            <Link
-              key={b.title}
-              to={b.to}
+          <Link
+            key={b.title}
+            to={b.to}
               className={`relative overflow-hidden rounded-2xl shadow-md hover:shadow-lg transition-shadow bg-gradient-to-br ${b.gradient} text-white h-full min-h-[180px]`}
-            >
+          >
               <div className={`absolute inset-0 bg-gradient-to-br ${b.gradient}`} />
               {b.image && (
                 <img
@@ -216,19 +216,19 @@ const Home = () => {
               )}
               <div className="absolute inset-0 bg-gradient-to-br from-black/30 via-black/20 to-transparent" />
               <div className="relative z-10 p-6 md:p-7 h-full flex flex-col justify-between">
-                <div>
+              <div>
                   <h3 className="text-xl md:text-2xl font-semibold leading-tight">{b.title}</h3>
                   <p className="mt-2 text-white/90 text-sm md:text-base">{b.subtitle}</p>
-                </div>
+              </div>
                 <div className="mt-4">
                   <span className="inline-flex items-center gap-2 bg-white text-primary-700 px-4 py-2 rounded-xl font-semibold hover:bg-white/95 text-sm">
-                    {b.cta}
-                    <span aria-hidden="true">→</span>
-                  </span>
-                </div>
+                  {b.cta}
+                  <span aria-hidden="true">→</span>
+                </span>
               </div>
-            </Link>
-          ))}
+            </div>
+          </Link>
+        ))}
         </div>
       </section>
 

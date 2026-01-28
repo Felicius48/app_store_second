@@ -11,8 +11,8 @@ initializeDatabase();
 const app = createApp();
 
 app.listen(PORT, () => {
-  console.log(`🚀 Сервер запущен на порту ${PORT}`);
-  console.log(`🌍 Режим: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`Сервер запущен на порту ${PORT}`);
+  console.log(`Режим: ${process.env.NODE_ENV || 'development'}`);
 });
 
 module.exports = app;

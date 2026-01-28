@@ -43,16 +43,16 @@ install_deps() {
     local name="$2"
     echo "📦 Установка зависимостей ${name}..."
     cd "$SCRIPT_DIR/$target"
-    if [ ! -d "node_modules" ]; then
-        npm install
-        if [ $? -ne 0 ]; then
+if [ ! -d "node_modules" ]; then
+    npm install
+    if [ $? -ne 0 ]; then
             echo "❌ Ошибка установки зависимостей ${name}"
-            exit 1
-        fi
-        echo "✅ Зависимости ${name} установлены"
-    else
-        echo "✅ Зависимости ${name} уже установлены"
+        exit 1
     fi
+        echo "✅ Зависимости ${name} установлены"
+else
+        echo "✅ Зависимости ${name} уже установлены"
+fi
 }
 
 install_deps "backend" "backend"
@@ -66,7 +66,7 @@ cd "$SCRIPT_DIR/backend"
 npm run migrate
 if [ $? -ne 0 ]; then
     echo "❌ Ошибка миграций базы данных"
-    exit 1
+        exit 1
 fi
 echo "✅ Миграции применены"
 echo ""

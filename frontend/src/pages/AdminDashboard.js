@@ -966,9 +966,9 @@ const AdminDashboard = () => {
                         <option value="pending">Ожидает подтверждения</option>
                         <option value="processing">Подтвержден</option>
                       </select>
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
-                        {order.statusText}
-                      </span>
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
+                      {order.statusText}
+                    </span>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
